@@ -22,16 +22,28 @@ This is a sample application designed to illustrate various concepts related to 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Architecture](#architecture)
+- [Application Architecture](#application-architecture)
+- [Infrastructure Architecture](#infrastructure-architecture)
+- [Quick Start](#quick-start)
+- [Branch Strategy](#branch-strategy)
+  - [Public Application (Main Branch)](#-public-application-main-branch)
+  - [Production (GitOps Branch)](#-production-gitops-branch)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
-- [GitOps Workflow](#gitops-workflow)
-- [EKS Auto Mode](#eks-auto-mode)
-- [Infrastructure Components](#infrastructure-components)
-- [CI/CD Pipeline](#cicd-pipeline)
-- [Monitoring and Observability](#monitoring-and-observability)
-- [Cleanup](#cleanup)
-- [Troubleshooting](#troubleshooting)
+- [Deployment Steps](#follow-these-steps-to-deploy-the-application)
+  - [Step 1: Configure AWS Credentials](#step-1-configure-aws-with-root-user-credentials)
+  - [Step 2: Clone the Repository](#step-2-clone-the-repository)
+  - [Step 3: Deploy Infrastructure with Terraform](#step-3-deploy-infrastructure-with-terraform)
+    - [Phase 1: Create EKS Cluster](#phase-1-of-terraform-create-eks-cluster)
+  - [Step 4: Update kubeconfig](#step-4-update-kubeconfig-to-access-the-amazon-eks-cluster)
+    - [Phase 2: Deploy Remaining Configuration](#phase-2-of-terraform-once-you-update-kubeconfig-apply-the-remaining-configuration)
+  - [Step 5: GitHub Actions Setup](#step-5-github-actions)
+  - [Step 6: Access the Application](#step-6-access-the-application)
+  - [Step 7: ArgoCD Deployment](#step-7-argo-cd-automated-deployment)
+  - [Step 8: ArgoCD UI Access](#step-8-port-forward-to-argo-cd-ui-and-login)
+  - [Step 9: Monitor Deployment](#step-9-monitor-application-deployment)
+  - [Cleanup](#step-11-cleanup)
+  - [License](#license)
 
 ## Overview
 
@@ -416,7 +428,7 @@ terraform destroy --auto-approve
 <img width="1139" height="439" alt="image" src="https://github.com/user-attachments/assets/5258761a-01c4-49d0-b6f3-997fc10a9f35" />
 
 > [!NOTE]
-> Only ECR Repositories you need to Delete it from AWS Console Manually.
+> ECR Repositories you need to Delete it from AWS Console Manually.
 
 
 
