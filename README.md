@@ -37,17 +37,27 @@ This is a sample application designed to illustrate various concepts related to 
 
 The Retail Store Sample App demonstrates a modern microservices architecture deployed on AWS EKS using GitOps principles. The application consists of multiple services that work together to provide a complete retail store experience:
 
-![Application Architecture Diagram](./docs/images/application-architecture.png)
-
 - **UI Service**: Java-based frontend
 - **Catalog Service**: Go-based product catalog API
 - **Cart Service**: Java-based shopping cart API
 - **Orders Service**: Java-based order management API
 - **Checkout Service**: Node.js-based checkout orchestration API
 
-## Infrastructure Architecture
+## Application Architecture
 
-![Infrastructure Architecture Diagram](./docs/images/architecture.png)
+The application has been deliberately over-engineered to generate multiple de-coupled components. These components generally have different infrastructure dependencies, and may support multiple "backends" (example: Carts service supports MongoDB or DynamoDB).
+
+![Application Architecture Diagram](./docs/images/architecture.png)
+
+| Component                  | Language | Container Image                                                             | Helm Chart                                                                        | Description                             |
+| -------------------------- | -------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------- |
+| [UI](./src/ui/)            | Java     | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-ui)       | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-ui-chart)       | Store user interface                    |
+| [Catalog](./src/catalog/)  | Go       | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-catalog)  | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-catalog-chart)  | Product catalog API                     |
+| [Cart](./src/cart/)        | Java     | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-cart)     | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-cart-chart)     | User shopping carts API                 |
+| [Orders](./src/orders)     | Java     | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-orders)   | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-orders-chart)   | User orders API                         |
+| [Checkout](./src/checkout) | Node     | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-checkout) | [Link](https://gallery.ecr.aws/aws-containers/retail-store-sample-checkout-chart) | API to orchestrate the checkout process |
+
+## Infrastructure Architecture
 
 The Infrastructure Architecture follows cloud-native best practices:
 
@@ -56,6 +66,41 @@ The Infrastructure Architecture follows cloud-native best practices:
 - **GitOps**: Infrastructure and application deployment managed through Git
 - **Infrastructure as Code**: All AWS resources defined using Terraform
 - **CI/CD**: Automated build and deployment pipelines with GitHub Actions
+
+![Infrastructure Architecture Diagram](./docs/images/application-architecture.gif)
+
+## Quick Start
+
+**Want to deploy immediately?** Follow these steps for a basic deployment:
+
+1. **Install Prerequisites**: AWS CLI, Terraform, kubectl, Docker, Helm
+2. **Configure AWS**: `aws configure` with appropriate credentials
+3. **Clone Repository**: `git clone https://github.com/iemafzalhassan/retail-store-sample-app.git`
+4. **Deploy Infrastructure**: Run Terraform in two phases (see [Getting Started](#getting-started))
+5. **Access Application**: Get load balancer URL and browse the retail store
+
+**Need advanced GitOps workflow?** See [BRANCHING_STRATEGY.md](./BRANCHING_STRATEGY.md) for automated CI/CD setup.
+
+## Branch Strategy
+
+This repository uses a **dual-branch approach** for different deployment scenarios:
+
+### 🌐 **Public Application (Main Branch)**
+- **Purpose**: Simple deployment with public images
+- **Images**: Public ECR (stable versions like v1.2.2)
+- **Deployment**: Manual control with umbrella chart
+- **Updates**: Manual only
+- **Best for**: Demos, learning, quick testing, simple deployments
+
+### 🏭 **Production (GitOps Branch)**
+- **Purpose**: Full production workflow with CI/CD pipeline
+- **Images**: Private ECR (auto-updated with commit hashes)
+- **Deployment**: Automated via GitHub Actions
+- **Updates**: Automatic on code changes
+- **Best for**: Production environments, automated workflows, enterprise deployments
+
+> **📚 For detailed branching strategy, CI/CD setup, and advanced workflows, see [BRANCHING_STRATEGY.md](./BRANCHING_STRATEGY.md)**
+
 
 ## Prerequisites
 
@@ -76,23 +121,23 @@ Follow these steps to **install Prerequisites:**
 
   * These commands will download and install the **AWS Command Line Interface**.
 
-```sh
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
+    ```sh
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
 
-# Verify the installation
-aws --version
-```
+    # Verify the installation
+    aws --version
+    ```
 
 - #### 2. Terraform:
 
-  - **Terraform** is installed by downloading the binary appropriate for your operating system.
+  - **Terraform** download the binary compatible with your operating system and follow the installation steps.
 
     - <details>
       <summary><strong>Click for Linux & macOS Instructions</strong></summary>
 
-      1.  **Download the Binary**: Go to the [Terraform Downloads Page](https://releases.hashicorp.com/terraform/1.12.2) to find the correct zip file for your system (e.g., Linux AMD64, macOS ARM64).
+      1.  **Download the Binary**: [Download Terraform](https://releases.hashicorp.com/terraform/1.12.2) find the correct zip file for your system.
 
       2.  **Install the Binary**: Unzip the file and move the `terraform` executable to a directory in your system's PATH.
 
@@ -153,7 +198,7 @@ aws --version
 
 - #### [4. Docker](https://docs.docker.com/desktop/setup/install/linux/):
 
-  - > **Step 1: Set Up the Repository:**
+  - **Step 1: Set Up the Repository:**
 
     ```sh
     sudo apt-get update
@@ -163,7 +208,7 @@ aws --version
         gnupg
     ```
 
-  - > **Step 2: Add Docker’s Official GPG Key:**
+  - **Step 2: Add Docker’s Official GPG Key:**
 
     ```sh
     sudo install -m 0755 -d /etc/apt/keyrings
@@ -171,7 +216,7 @@ aws --version
     sudo chmod a+r /etc/apt/keyrings/docker.gpg
     ```
   
-  - > **Step 3: Set Up the Docker Repository:**
+  - **Step 3: Set Up the Docker Repository:**
 
     ```sh
     echo \
@@ -181,7 +226,7 @@ aws --version
     ```
 
 
-  - > **Step 4: Install Docker Engine:**
+  - **Step 4: Install Docker Engine:**
     
     ```sh
     sudo apt-get update
@@ -193,15 +238,14 @@ aws --version
 
 - #### 5. Helm:
   
-    ```sh
-    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-    chmod 700 get_helm.sh
-    ./get_helm.sh --version v3.18.4
-    ```
+      ```sh
+      curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+      chmod 700 get_helm.sh
+      ./get_helm.sh --version v3.18.4
+      ```
 
 
-
-Follow these steps to deploy the application:
+## Follow these steps to deploy the application:
 
 ### Step 1. Configure AWS with **`Root User`** Credentials:
 
@@ -218,114 +262,17 @@ git clone https://github.com/iemafzalhassan/retail-store-sample-app.git
 cd retail-store-sample-app
 ```
 
-> [!IMPORTANT]
-> ### Step 3: Initial Deployment with Public Images:
->
-> <details>
->  <summary><strong>Click to Read:</strong> First-Time Deployment Instructions</summary>
->
->  * On the initial deploy, ArgoCD is configured to use public container images as specified in this guide.
->  * After this first deployment, the GitHub Actions workflow will run automatically, updating the `values.yaml` files to use your private ECR images and tags for all future deployments.
-> </details>
-> 
-> ### Automatic Update Instructions:
-> 
-> ```sh
-> ./scripts/update-helm-values.sh
-> ```
-> 
-> ### Manual Update Instructions:
-> 
-> For the initial deployment, you must update the `values.yaml` file for each of the five services to use the public ECR images.
-> 
-> #### **Service-Specific Configuration**
-> 
-> <details>
-> <summary><strong>1. Cart Service</strong></summary>
-> 
-> Update `src/cart/chart/values.yaml` to match the following content:
-> ```yaml
-> # ... other values
-> image:
->   repository: public.ecr.aws/aws-containers/retail-store-sample-cart
->   pullPolicy: Always
->   tag: "1.2.2"
-> # ... other values
-> ```
-> </details>
-> 
-> <details>
-> <summary><strong>2. Catalog Service</strong></summary>
-> 
-> Update `src/catalog/chart/values.yaml` to match the following content:
-> ```yaml
-> # ... other values
-> image:
->   repository: public.ecr.aws/aws-containers/retail-store-sample-catalog
->   pullPolicy: Always
->   tag: "1.2.2"
-> # ... other values
-> ```
-> </details>
-> 
-> <details>
-> <summary><strong>3. Checkout Service</strong></summary>
->
-> Update `src/checkout/chart/values.yaml` to match the following content:
-> ```yaml
-> # ... other values
-> image:
->   repository: public.ecr.aws/aws-containers/retail-store-sample-checkout
->   pullPolicy: Always
->   tag: "1.2.2"
-> # ... other values
-> ```
-> </details>
-> 
-> <details>
-> <summary><strong>4. Orders Service</strong></summary>
-> 
-> Update `src/orders/chart/values.yaml` to match the following content:
-> ```yaml
-> # ... other values
-> image:
->   repository: public.ecr.aws/aws-containers/retail-store-sample-orders
->   pullPolicy: Always
->   tag: "1.2.2"
-> # ... other values
-> ```
-> </details>
-> 
-> <details>
-> <summary><strong>5. UI Service</strong></summary>
->
-> Update `src/ui/chart/values.yaml` to match the following content:
-> ```yaml
-> # ... other values
-> image:
->   repository: public.ecr.aws/aws-containers/retail-store-sample-ui
->   pullPolicy: Always
->   tag: "1.2.2"
-> # ... other values
-> ```
-> </details>
->
-> ### Step 4: Comment out `.github/workflows/update-helm-values.yml`:
-
-
-### Step 5. Deploy Infrastructure with Terraform:
+### Step 3. Deploy Infrastructure with Terraform:
 
 The deployment is split into two phases for better control:
 
 
 ### Phase 1 of Terraform: Create EKS Cluster 
 
-In Phase 1: Terraform Initialises and creates resources within the retail_app_eks module. 
-
 ```sh
-cd retail-store-sample-app/terraform/eks/default/
+cd retail-store-sample-app/terraform
 terraform init
-terraform apply -target=module.retail_app_eks --auto-approve
+terraform apply -target=module.retail_app_eks -target=module.vpc --auto-approve
 ```
 
 <img width="1205" height="292" alt="image" src="https://github.com/user-attachments/assets/6f1e407e-4a4e-4a4c-9bdf-0c9b89681368" />
@@ -338,13 +285,12 @@ This creates the core infrastructure, including:
 - Security groups and IAM roles
   
 
-### Step 6: Update kubeconfig to Access the Amazon EKS Cluster:
+### Step 4: Update kubeconfig to Access the Amazon EKS Cluster:
 ```
 aws eks update-kubeconfig --name retail-store --region <region>
 ```
 
 ### Phase 2 of Terraform: Once you update kubeconfig, apply the Remaining Configuration:
-
 
 ```bash
 terraform apply --auto-approve
@@ -355,7 +301,17 @@ This deploys:
 - NGINX Ingress Controller
 - Cert Manager for SSL certificates
 
-### Step 7: GitHub Actions:
+> [!TIP]
+> Application is live with Public image:
+
+- Get your ingress EXTERNAL-IP and paste it in the browser to access retail-store application.
+    ```sh
+    kubectl get svc -n ingress-nginx
+    ```
+
+> [!NOTE]
+> Let's move forward with GitOps principle utilising Amazon private registry to create private registry and store images.
+### Step 5: GitHub Actions:
 
 For GitHub Actions, first configure secrets so the pipelines can be automatically triggered:
 
@@ -363,15 +319,12 @@ For GitHub Actions, first configure secrets so the pipelines can be automaticall
 
 **Go to your GitHub repo → Settings → Secrets and variables → Actions → New repository secret.**
 
-
 | Secret Name           | Value                              |
 |-----------------------|------------------------------------|
 | `AWS_ACCESS_KEY_ID`   | `Your AWS Access Key ID`           |
 | `AWS_SECRET_ACCESS_KEY` | `Your AWS Secret Access Key`     |
 | `AWS_REGION`          | `region-name`                       |
 | `AWS_ACCOUNT_ID`        | `your-account-id` |
-
-
 
 > [!IMPORTANT]
 > Once the entire cluster is created, any changes pushed to the repository will automatically trigger GitHub Actions.
@@ -391,7 +344,7 @@ Check if the nodes are running:
 kubectl get nodes
 ```
 
-### Step 8: Access the Application:
+### Step 6: Access the Application:
 
 The application is exposed through the NGINX Ingress Controller. Get the load balancer URL:
 
@@ -403,7 +356,7 @@ Use the EXTERNAL-IP of the ingress-nginx-controller service to access the applic
 
 <img width="2912" height="1756" alt="image" src="https://github.com/user-attachments/assets/095077d6-d3cb-48f6-b021-e977db5fb242" />
 
-### Step 9: Argo CD Automated Deployment:
+### Step 7: Argo CD Automated Deployment:
 
 **Verify ArgoCD installation**
 
@@ -412,7 +365,7 @@ kubectl get pods -n argocd
 ```
 
 
-### Step 10: Port-forward to Argo CD UI and login:
+### Step 8: Port-forward to Argo CD UI and login:
 
 **Get ArgoCD admin password**
 ```
